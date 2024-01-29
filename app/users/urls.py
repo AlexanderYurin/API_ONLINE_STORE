@@ -1,6 +1,11 @@
-def main():
-	pass
+from django.urls import path
 
+from users.views import index, avatar, password
 
-if __name__ == '__main__':
-	main()
+app_name = "users"
+
+urlpatterns = [
+    path("", index),
+    path("avatar/", avatar),
+    path("password/", password),
+]
