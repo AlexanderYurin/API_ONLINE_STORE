@@ -1,3 +1,105 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.db.models import CharField
+from mptt.models import MPTTModel, TreeForeignKey
 
-# Create your models here.
+
+class Category(MPTTModel):
+	title = models.CharField(max_length=128, verbose_name="title")
+	parent = TreeForeignKey(to="Category", on_delete=models.CASCADE, related_name="subcategories",
+							null=True, blank=True, verbose_name="category")
+	src = models.ImageField(upload_to="icons_category/", null=True, blank=True, verbose_name="Иконка")
+
+	class MPTTMeta:
+		order_insertion_by = ["title"]
+
+	def __str__(self) -> CharField:
+		return self.title
+
+	class Meta:
+		verbose_name = "Категорию"
+		verbose_name_plural = "Категории"
+
+
+# class IconCategory(models.Model):
+# 	src = models.ImageField(upload_to="icons_category/", null=True, blank=True)
+# 	category = models.OneToOneField(to="Category", on_delete=models.CASCADE, related_name="icon")
+#
+# 	def __str__(self) -> str:
+# 		return self.src.name
+#
+# 	class Meta:
+# 		verbose_name = 'icon category'
+# 		verbose_name_plural = 'icons category'
+
+
+class Product(models.Model):
+	category = models.ForeignKey(to="Category", on_delete=models.CASCADE, related_name="products")
+	price = models.FloatField(verbose_name="Цена")
+	quantity = models.PositiveIntegerField(verbose_name="Кол-во")
+	date = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+	title = models.CharField(max_length=128, verbose_name="Название")
+	full_description = models.TextField(verbose_name="Описание")
+	free_delivery = models.BooleanField(verbose_name="Бесплатная доставка")
+
+	class Meta:
+		verbose_name = "Товар"
+		verbose_name_plural = "Товары"
+		ordering = ["price"]
+
+	def __str__(self) -> CharField:
+		return self.title
+
+	def rating(self) -> int | bool:
+		instance = self.reviews.all()
+		if len(instance) == 0:
+			return 0
+		rates_list = [review.rate for review in instance]
+		rating = round(sum(rates_list) / len(rates_list), 2)
+		return rating
+
+	def href(self) -> str:
+		return f"/product/{self.pk}"
+
+
+class ImageProduct(models.Model):
+	image = models.ImageField(upload_to="product_images/", null=True, blank=True)
+	product = models.ForeignKey(to="Product", on_delete=models.CASCADE, related_name="images")
+
+	class Meta:
+		verbose_name = "Изображение"
+		verbose_name_plural = "Изображения"
+
+
+class TagProduct(models.Model):
+	title = models.CharField(max_length=128)
+	products = models.ManyToManyField(Product, related_name="tags")
+
+	class Meta:
+		verbose_name = "Тэг"
+		verbose_name_plural = "Тэг"
+
+	def __str__(self) -> CharField:
+		return self.title
+
+
+class Review(models.Model):
+	author = models.CharField(max_length=255)
+	text = models.TextField()
+	email = models.EmailField()
+	rate = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+	date = models.DateTimeField(auto_now_add=True, auto_created=True)
+	product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reviews")
+
+	class Meta:
+		verbose_name = "Отзыв"
+		verbose_name_plural = "Отзывы"
+
+	def __str__(self):
+		return self.text
+
+
+class Specification(models.Model):
+	title = models.CharField(max_length=255)
+	value = models.CharField(max_length=128)
+	products = models.ManyToManyField(Product, related_name="specifications")
