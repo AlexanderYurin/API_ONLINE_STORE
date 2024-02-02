@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from users.models import User
-from users.serializers import UserSerializer
+from users.serializers import UserSerializers
 
 
 # Create your views here.
@@ -14,7 +14,7 @@ class UserViewSet(viewsets.ViewSet):
 	пользователя
 	"""
 	queryset = User.objects.all()
-	serializer_class = UserSerializer
+	serializer_class = UserSerializers
 
 	@action(detail=True, methods=["get"])
 	def get_profile(self, request, pk=None):

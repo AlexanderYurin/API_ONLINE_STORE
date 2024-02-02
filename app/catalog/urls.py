@@ -1,6 +1,9 @@
-def main():
-	pass
+from django.urls import path
+from rest_framework.routers import DefaultRouter
 
+from catalog.views import CategoryViewSet
 
-if __name__ == '__main__':
-	main()
+urlpatterns = [
+	path('categories/', CategoryViewSet.as_view({"get": "get_categories"})),
+
+]

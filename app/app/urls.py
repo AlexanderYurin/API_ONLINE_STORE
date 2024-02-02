@@ -24,7 +24,8 @@ from app import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("profile/", include("users.urls", namespace="user"))
+    path("api/", include("catalog.urls")),
+    path("api/profile/", include("users.urls", namespace="user")),
 ]
 
 if settings.DEBUG:

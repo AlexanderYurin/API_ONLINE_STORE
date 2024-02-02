@@ -5,7 +5,7 @@ from mptt.models import MPTTModel, TreeForeignKey
 
 
 class Category(MPTTModel):
-	title = models.CharField(max_length=128, verbose_name="title")
+	title = models.CharField(max_length=128, verbose_name="Название")
 	parent = TreeForeignKey(to="Category", on_delete=models.CASCADE, related_name="subcategories",
 							null=True, blank=True, verbose_name="category")
 	src = models.ImageField(upload_to="icons_category/", null=True, blank=True, verbose_name="Иконка")
@@ -13,24 +13,12 @@ class Category(MPTTModel):
 	class MPTTMeta:
 		order_insertion_by = ["title"]
 
-	def __str__(self) -> CharField:
+	def __str__(self):
 		return self.title
 
 	class Meta:
 		verbose_name = "Категорию"
 		verbose_name_plural = "Категории"
-
-
-# class IconCategory(models.Model):
-# 	src = models.ImageField(upload_to="icons_category/", null=True, blank=True)
-# 	category = models.OneToOneField(to="Category", on_delete=models.CASCADE, related_name="icon")
-#
-# 	def __str__(self) -> str:
-# 		return self.src.name
-#
-# 	class Meta:
-# 		verbose_name = 'icon category'
-# 		verbose_name_plural = 'icons category'
 
 
 class Product(models.Model):
@@ -47,7 +35,7 @@ class Product(models.Model):
 		verbose_name_plural = "Товары"
 		ordering = ["price"]
 
-	def __str__(self) -> CharField:
+	def __str__(self):
 		return self.title
 
 	def rating(self) -> int | bool:
@@ -63,7 +51,7 @@ class Product(models.Model):
 
 
 class ImageProduct(models.Model):
-	image = models.ImageField(upload_to="product_images/", null=True, blank=True)
+	image = models.ImageField(upload_to="product_images/", null=True, blank=True, verbose_name="Название")
 	product = models.ForeignKey(to="Product", on_delete=models.CASCADE, related_name="images")
 
 	class Meta:
@@ -72,7 +60,7 @@ class ImageProduct(models.Model):
 
 
 class TagProduct(models.Model):
-	title = models.CharField(max_length=128)
+	title = models.CharField(max_length=128, verbose_name="Название")
 	products = models.ManyToManyField(Product, related_name="tags")
 
 	class Meta:
@@ -84,11 +72,11 @@ class TagProduct(models.Model):
 
 
 class Review(models.Model):
-	author = models.CharField(max_length=255)
-	text = models.TextField()
-	email = models.EmailField()
-	rate = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
-	date = models.DateTimeField(auto_now_add=True, auto_created=True)
+	author = models.CharField(max_length=255, verbose_name="Автор")
+	text = models.TextField(verbose_name="Текст")
+	email = models.EmailField(verbose_name="Емайл")
+	rate = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)], verbose_name="Рейтинг")
+	date = models.DateTimeField(auto_now_add=True, auto_created=True, verbose_name="Дата создания")
 	product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reviews")
 
 	class Meta:
@@ -100,6 +88,10 @@ class Review(models.Model):
 
 
 class Specification(models.Model):
-	title = models.CharField(max_length=255)
-	value = models.CharField(max_length=128)
+	title = models.CharField(max_length=255, verbose_name="Название")
+	value = models.CharField(max_length=128, verbose_name="Значение")
 	products = models.ManyToManyField(Product, related_name="specifications")
+
+	class Meta:
+		verbose_name = "Спецификацию"
+		verbose_name_plural = "Спецификации"
