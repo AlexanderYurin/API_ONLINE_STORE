@@ -23,11 +23,11 @@ class Category(MPTTModel):
 
 class Product(models.Model):
 	category = models.ForeignKey(to="Category", on_delete=models.CASCADE, related_name="products")
-	price = models.FloatField(verbose_name="Цена")
+	price = models.DecimalField(default=0.00, max_digits=7, decimal_places=2, verbose_name="Цена")
 	quantity = models.PositiveIntegerField(verbose_name="Кол-во")
 	date = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 	title = models.CharField(max_length=128, verbose_name="Название")
-	full_description = models.TextField(verbose_name="Описание")
+	full_description = models.TextField(default=False, verbose_name="Описание")
 	free_delivery = models.BooleanField(verbose_name="Бесплатная доставка")
 
 	class Meta:
@@ -38,7 +38,7 @@ class Product(models.Model):
 	def __str__(self):
 		return self.title
 
-	def rating(self) -> int | bool:
+	def get_rating(self):
 		instance = self.reviews.all()
 		if len(instance) == 0:
 			return 0
@@ -46,12 +46,9 @@ class Product(models.Model):
 		rating = round(sum(rates_list) / len(rates_list), 2)
 		return rating
 
-	def href(self) -> str:
-		return f"/product/{self.pk}"
-
 
 class ImageProduct(models.Model):
-	image = models.ImageField(upload_to="product_images/", null=True, blank=True, verbose_name="Название")
+	src = models.ImageField(upload_to="product_images/", null=True, blank=True, verbose_name="Название")
 	product = models.ForeignKey(to="Product", on_delete=models.CASCADE, related_name="images")
 
 	class Meta:
