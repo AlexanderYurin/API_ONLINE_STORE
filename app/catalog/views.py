@@ -5,7 +5,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from catalog.models import Category, Product
-from catalog.serializers import CategorySerializer, ProductSerializer
+from catalog.serializers import CategorySerializer, ProductCatalogSerializer
 
 
 class CategoryViewSet(viewsets.GenericViewSet):
@@ -31,7 +31,7 @@ class CatalogViewSet(viewsets.GenericViewSet):
 	def get_catalog(self, request):
 		paginator = PageNumberPagination()
 		page_objects = paginator.paginate_queryset(self.queryset, request)
-		serializer = ProductSerializer(page_objects, many=True)
+		serializer = ProductCatalogSerializer(page_objects, many=True)
 		response_data = {
 			"items": serializer.data,
 			"currentPage": paginator.page.number,
@@ -40,15 +40,16 @@ class CatalogViewSet(viewsets.GenericViewSet):
 		}
 		return Response(response_data)
 
-	# def get_catalog_id(self, request, pk):
-	# 	queryset = Product.objects.filter(category=pk).order_by("-date")
-	# 	paginator = PageNumberPagination()
-	# 	page_objects = paginator.paginate_queryset(queryset, request)
-	# 	serializer = ProductSerializer(page_objects, many=True)
-	# 	response_data = {
-	# 		"items": serializer.data,
-	# 		"currentPage": paginator.page.number,
-	# 		"lastPage": paginator.page.paginator.num_pages,
-	#
-	# 	}
-	# 	return Response(response_data)
+	@action(detail=False, methods=["get"])
+	def get_catalog_id(self, request, pk):
+		queryset = Product.objects.filter(category__pk=pk).order_by("-date")
+		paginator = PageNumberPagination()
+		page_objects = paginator.paginate_queryset(queryset, request)
+		serializer = ProductCatalogSerializer(page_objects, many=True)
+		response_data = {
+			"items": serializer.data,
+			"currentPage": paginator.page.number,
+			"lastPage": paginator.page.paginator.num_pages,
+
+		}
+		return Response(response_data)
