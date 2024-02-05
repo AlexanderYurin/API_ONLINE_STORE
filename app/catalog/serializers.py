@@ -93,6 +93,8 @@ class SpecificationSerializer(serializers.ModelSerializer):
 class ProductCatalogSerializer(serializers.ModelSerializer):
 	id = serializers.CharField()
 	count = serializers.SerializerMethodField()
+	price = serializers.FloatField()
+	category = serializers.CharField()
 	date = serializers.DateTimeField(format='%a %b %d %Y %H:%M:%S %Z%z')
 	description = serializers.SerializerMethodField()
 	href = serializers.SerializerMethodField()
@@ -100,6 +102,7 @@ class ProductCatalogSerializer(serializers.ModelSerializer):
 	tags = serializers.SerializerMethodField()
 	reviews = serializers.SerializerMethodField()
 	rating = serializers.SerializerMethodField()
+	freeDelivery = serializers.SerializerMethodField()
 
 	class Meta:
 		model = Product
@@ -116,8 +119,12 @@ class ProductCatalogSerializer(serializers.ModelSerializer):
 		return obj.quantity
 
 	@staticmethod
-	def get_description(obj) -> str:
-		return obj.description[:48] + '...'
+	def get_description(obj):
+		return obj.full_description[:48] + '...'
+
+	@staticmethod
+	def get_freeDelivery(obj):
+		return obj.free_delivery
 
 	@staticmethod
 	def get_href(obj):
@@ -156,7 +163,7 @@ class DetailCatalogSerializer(ProductCatalogSerializer):
 
 	@staticmethod
 	def get_fullDescription(obj):
-		return obj.description
+		return obj.full_description
 
 	@staticmethod
 	def get_reviews(obj):

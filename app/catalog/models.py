@@ -27,8 +27,8 @@ class Product(models.Model):
 	quantity = models.PositiveIntegerField(verbose_name="Кол-во")
 	date = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 	title = models.CharField(max_length=128, verbose_name="Название")
-	full_description = models.TextField(default=False, verbose_name="Описание")
-	free_delivery = models.BooleanField(verbose_name="Бесплатная доставка")
+	full_description = models.TextField(verbose_name="Описание")
+	free_delivery = models.BooleanField(default=False, verbose_name="Бесплатная доставка")
 
 	class Meta:
 		verbose_name = "Товар"
