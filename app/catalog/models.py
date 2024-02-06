@@ -29,6 +29,7 @@ class Product(models.Model):
 	title = models.CharField(max_length=128, verbose_name="Название")
 	full_description = models.TextField(verbose_name="Описание")
 	free_delivery = models.BooleanField(default=False, verbose_name="Бесплатная доставка")
+	discount = models.ForeignKey(to="Discount", on_delete=models.CASCADE, related_name="products", blank=True, null=True)
 
 	class Meta:
 		verbose_name = "Товар"
@@ -45,6 +46,25 @@ class Product(models.Model):
 		rates_list = [review.rate for review in instance]
 		rating = round(sum(rates_list) / len(rates_list), 2)
 		return rating
+
+	def sell_price(self):
+		if self.discount:
+			return round(self.price - self.discount.discount * self.price / 100, 2)
+		return self.price
+
+
+class Discount(models.Model):
+	discount = models.DecimalField(default=0.00, max_digits=4, decimal_places=2, verbose_name="Скидка")
+	date_from = models.DateTimeField(auto_now_add=True, auto_created=True, verbose_name="Начало акции")
+	date_to = models.DateTimeField(verbose_name="Конец акции")
+
+	class Meta:
+		verbose_name = "Скидка"
+		verbose_name_plural = "Скидки"
+		ordering = ["discount"]
+
+	def __str__(self):
+		return f"{self.discount}%"
 
 
 class ImageProduct(models.Model):

@@ -48,7 +48,7 @@ class CategorySerializer(SubcategoriesSerializer):
 			return SubcategoriesSerializer(subcategories, many=True).data
 
 
-class TagsSerializer(serializers.ModelSerializer):
+class TagSerializer(serializers.ModelSerializer):
 	id = serializers.SerializerMethodField()
 	name = serializers.SerializerMethodField()
 
@@ -68,14 +68,14 @@ class ReviewSerializer(serializers.ModelSerializer):
 		model = Review
 		fields = ["author", "email", "text", "rate", "date"]
 
-	# def create(self, validated_data: dict):
-	#     return Review.objects.create(
-	#         author=validated_data.get('author'),
-	#         email=validated_data.get('email'),
-	#         text=validated_data.get('text'),
-	#         rate=validated_data.get('rate'),
-	#         product_id=validated_data.get('product_id')
-	#     )
+	def create(self, validated_data: dict):
+		return Review.objects.create(
+			author=validated_data.get("author"),
+			email=validated_data.get("email"),
+			text=validated_data.get("text"),
+			rate=validated_data.get("rate"),
+			product_id=validated_data.get("product_id")
+		)
 
 
 class SpecificationSerializer(serializers.ModelSerializer):
@@ -178,3 +178,29 @@ class DetailCatalogSerializer(ProductCatalogSerializer):
 			specs = [spec for spec in obj.specifications.all()]
 			return SpecificationSerializer(specs, many=True).data
 		return []
+
+
+class ProductSaleSerializer(ProductCatalogSerializer):
+	salePrice = serializers.SerializerMethodField()
+	dateTo = serializers.SerializerMethodField()
+	dateFrom = serializers.SerializerMethodField()
+
+	class Meta:
+		model = Product
+		fields = [
+			"id", "price", "salePrice",
+			"dateFrom", "dateTo", "title",
+			"href", "images"
+		]
+
+	@staticmethod
+	def get_salePrice(obj):
+		return obj.sell_price()
+
+	@staticmethod
+	def get_dateFrom(obj):
+		return obj.date_from
+
+	@staticmethod
+	def get_dateTo(obj):
+		return obj.date_to
