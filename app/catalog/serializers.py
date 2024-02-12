@@ -57,6 +57,10 @@ class TagSerializer(serializers.ModelSerializer):
 		fields = ["id", "name"]
 
 	@staticmethod
+	def get_name(obj):
+		return obj.title.lower()
+
+	@staticmethod
 	def get_id(obj):
 		return obj.title.lower()
 
@@ -199,8 +203,8 @@ class ProductSaleSerializer(ProductCatalogSerializer):
 
 	@staticmethod
 	def get_dateFrom(obj):
-		return obj.date_from
+		return obj.discount.date_from
 
 	@staticmethod
 	def get_dateTo(obj):
-		return obj.date_to
+		return obj.discount.date_to

@@ -35,17 +35,20 @@ class CatalogViewSet(ReadOnlyModelViewSet):
 	def get_queryset(self):
 		if self.action == "get_catalog_id":
 			return self.queryset.filter(category__pk=self.kwargs[self.lookup_field]).order_by("-date")
+		if self.action == "get_catalog":
+			return self.queryset
+		self.pagination_class = None
 		if self.action == "get_catalog_popular":
 			return self.queryset.filter(reviews__isnull=False).annotate(
 				total_rate=Avg("reviews__rate")).order_by("-total_rate")
 		if self.action == "get_catalog_limit":
 			return self.queryset.filter(quantity__range=(1, 20)).order_by("quantity")
 		if self.action == "get_banner":
-			return self.queryset.filter.order_by("-count")[:5]
+			return self.queryset.order_by("-quantity")[:5]
 		if self.action == "get_sales":
 			self.serializer_class = ProductSaleSerializer
 			return self.queryset.filter(discount__isnull=False).order_by("-discount__discount")
-		return self.queryset
+
 
 	def get_catalog(self, request):
 		return super().list(request)

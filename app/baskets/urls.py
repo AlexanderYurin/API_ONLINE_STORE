@@ -1,6 +1,9 @@
-def main():
-	pass
+from django.urls import path
+
+from baskets.views import BasketViewSet
 
 
-if __name__ == '__main__':
-	main()
+urlpatterns = [
+	path("", BasketViewSet.as_view({"get": "list", "post": "create"})),
+
+]

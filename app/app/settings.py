@@ -46,7 +46,7 @@ INSTALLED_APPS = [
 	"drf_yasg",
 	"mptt",
 	"catalog",
-
+	"baskets",
 	"users"
 ]
 

@@ -1,6 +1,13 @@
-def main():
-	pass
+from rest_framework import serializers
+
+from baskets.models import Basket
+from catalog.serializers import ProductCatalogSerializer
 
 
-if __name__ == '__main__':
-	main()
+class BasketSerializer(serializers.ModelSerializer):
+	product = ProductCatalogSerializer()
+
+	class Meta:
+		model = Basket
+		fields = "__all__"
+

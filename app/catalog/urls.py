@@ -13,5 +13,4 @@ urlpatterns = [
 	path("tags/", TagViewSet.as_view({"get": "list"})),
 	path("products/<int:pk>", ProductViewSet.as_view({"get": "get_product_id"})),
 	path("product<int:pk>/review", ProductViewSet.as_view({"post": "post_product_id_review"})),
-
 ]
