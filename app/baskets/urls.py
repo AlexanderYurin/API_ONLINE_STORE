@@ -4,6 +4,6 @@ from baskets.views import BasketViewSet
 
 
 urlpatterns = [
-	path("", BasketViewSet.as_view({"get": "list", "post": "create"})),
+	path("", BasketViewSet.as_view({"get": "list", "post": "post_basket"})),
 
 ]
