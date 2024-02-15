@@ -22,50 +22,45 @@ class BasketViewSet(ListModelMixin, GenericViewSet):
 	def get_queryset(self):
 		if self.request.user.is_authenticated:
 			return Basket.objects.filter(user=self.request.user)
+		print(self.request.session.session_key)
 		return Basket.objects.filter(session_key=self.request.session.session_key)
 
 	@action(detail=False, methods="POST")
 	def post_basket(self, request, *args, **kwargs):
-		serializer = BasketSerializer(data=request.data)
+		valid_data = BasketSerializer(data=request.data)
+		valid_data.is_valid(raise_exception=True)
+		product_id = valid_data.data.get("id")
+		quantity = valid_data.data.get("quantity")
+		baskets = self.get_basket_user(request, product_id)
+		if baskets.exists():
+			product = baskets.first()
+			serializer = ListBasketSerializer(data=valid_data.data, instance=product)
+		else:
+			serializer = ListBasketSerializer(data=valid_data.data)
 		serializer.is_valid(raise_exception=True)
-		product_id = serializer.data.get("id")
-		quantity = serializer.data.get("quantity")
-		if request.user.is_authenticated:
-			basket_user = Basket.objects.filter(user=request.user)
-			products = basket_user.filter(product_id=product_id)
-			if products.exists():
-				basket = products.first()
-				basket.quantity += quantity
-				basket.save()
-			else:
-				Basket.objects.create(user=request.user, product_id=product_id, quantity=quantity)
-		# else:
-		# 	session_key = get_session_key(self.request)
-		# 	baskets = Basket.objects.filter(session_key=session_key, product=product)
-		# 	if baskets.exists():
-		# 		basket = baskets.first()
-		# 		basket.quantity += quantity
-		# 		basket.save()
-		# 	else:
-		# 		Basket.objects.create(session_key=request.session.session_key, product=product, quantity=quantity)
-		serializer = self.get_serializer(self.get_queryset(), many=True)
+		serializer.save(request=request, quantity=quantity, product_id=product_id)
+
 		return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-		# if request.user.is_authenticated:
-		# 	serializer.data["user"] = request.user
-		# 	baskets = Basket.objects.filter(user=request.user, product=product)
-		# else:
-		# 	session_key = get_session_key(self.request)
-		# 	serializer.data["session_key"] = session_key
-		# 	baskets = Basket.objects.filter(session_key=session_key, product=product)
-		#
-		# if baskets.exists():
-		# 	instance = baskets.first()
-		# 	serializer =
-		# 	serializer = BasketSerializer(data=request.data)
-		# 	serializer.is_valid(raise_exception=True)
-		# 	serializer.save(request=request, product_id=id)
-		# print(serializer.data)
-		# serializer.save(request=request, product_id=id)
-		# serializer = BasketSerializer(data=request.data)
+	@action(detail=False, methods="DELETE")
+	def delete_product_in_basket(self, request, *args, **kwargs):
+		valid_data = BasketSerializer(data=request.data)
+		valid_data.is_valid(raise_exception=True)
+		product_id = valid_data.data.get("id")
+		quantity = valid_data.data.get("quantity")
+		baskets = self.get_basket_user(request, product_id)
+		if not baskets.exists():
+			return Response(status=status.HTTP_400_BAD_REQUEST)
+		product = baskets.first()
+		serializer = ListBasketSerializer(data=valid_data.data, instance=product)
+		serializer.is_valid(raise_exception=True)
+		serializer.save(request=request, quantity=quantity, product_id=product_id)
+		return Response(serializer.data)
 
+	@staticmethod
+	def get_basket_user(request, product_id):
+		if request.user.is_authenticated:
+			return Basket.objects.filter(user=request.user, product_id=product_id)
+		else:
+			session_key = get_session_key(request)
+			return Basket.objects.filter(session_key=session_key, product_id=product_id)

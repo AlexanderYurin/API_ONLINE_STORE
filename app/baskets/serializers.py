@@ -17,9 +17,9 @@ class BasketSerializer(serializers.Serializer):
 
 
 class ListBasketSerializer(serializers.ModelSerializer):
-	id = serializers.CharField(source="product.id")
+	id = serializers.SerializerMethodField()
 	category = serializers.SerializerMethodField()
-	quantity = serializers.IntegerField()
+	count = serializers.SerializerMethodField()
 	price = serializers.SerializerMethodField()
 	title = serializers.SerializerMethodField()
 	description = serializers.SerializerMethodField()
@@ -33,15 +33,41 @@ class ListBasketSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Basket
 		fields = [
-			"id", "category", "price", "quantity",
+			"id", "category", "price", "count",
 			"date_created", "title", "description",
 			"href", "freeDelivery", "images",
 			"tags", "reviews", "rating",
 		]
 
+	def create(self, validated_data):
+		if validated_data.get("request").user:
+			return Basket.objects.create(user=validated_data.get("request").user,
+										 product_id=validated_data.get("product_id"),
+										 quantity=validated_data.get("quantity"))
+		return Basket.objects.create(session_key=validated_data.get("session_key"),
+									 product_id=validated_data.get("product_id"),
+									 quantity=validated_data.get("quantity"))
+
+	def update(self, instance, validated_data):
+		if validated_data["request"].method == "DELETE":
+			instance.quantity -= validated_data.get("quantity")
+			if instance.quantity < 1:
+				return instance.delete()
+		else:
+			instance.quantity += validated_data.get("quantity")
+		instance.save()
+		return instance
+	@staticmethod
+	def get_id(obj):
+		print(obj)
+		return str(obj.product.id)
+
+	@staticmethod
+	def get_count(obj):
+		return obj.quantity
+
 	@staticmethod
 	def get_category(obj):
-		print(obj)
 		return str(obj.product.category)
 
 	@staticmethod
